@@ -28,4 +28,46 @@ class Solution:
 
         return res
 
+# More intelligent version with O(nk) time complexity (k being max length of available servers - pop takes O(k)
+
+import heapq
+from bisect import bisect_left, insort
+
+class Solution:
+    def busiestServers(self, k: int, arrival: list[int], load: list[int]) -> list[int]:
+        server_handled = [0] * k
+        busy = []
+        server_available = [x for x in range(k)]
+        maxi = 0
+
+        # maintain min heap to track finishing servers
+        # ordered list to binary search for index of available server
+
+        if len(arrival) == 1:
+            return [0]
+
+        for i in range(len(arrival)):
+            while busy and busy[0][0] <= arrival[i]:
+                finish_time, server_id = heapq.heappop(busy)
+                insort(server_available, server_id)
+
+            if server_available:
+                idx = bisect_left(server_available, i % k)
+
+                if idx == len(server_available):
+                    idx = 0
+
+                server = server_available.pop(idx)
+                server_handled[server] += 1
+                maxi = max(server_handled[server], maxi)
+                heapq.heappush(busy, (arrival[i] + load[i], server))
+             
+        res = []
+        for i in range(k):
+            if server_handled[i] == maxi:
+                res.append(i)
+
+        return res
+
+
 
