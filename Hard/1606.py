@@ -70,4 +70,37 @@ class Solution:
         return res
 
 
+# genius version, store heap but manipulate index s.t. best choice available server for next i is at top of heap
 
+import heapq
+
+class Solution:
+    def busiestServers(self, k: int, arrival: list[int], load: list[int]) -> list[int]:
+        handled = [0] * k
+        available = list(range(k))
+        busy = []
+        maxi = 0
+
+        push = heapq.heappush
+        pop = heapq.heappop
+
+        for i, start in enumerate(arrival):
+
+            # Release finished servers
+            while busy and busy[0][0] <= start:
+                _, server = pop(busy)
+                push(available, i + (server - i) % k)
+
+            if not available:
+                continue
+
+            # Assign request
+            server = pop(available) % k
+            handled[server] += 1
+
+            if handled[server] > maxi:
+                maxi = handled[server]
+
+            push(busy, (start + load[i], server))
+
+        return [i for i, count in enumerate(handled) if count == maxi]
